@@ -69,3 +69,7 @@ npm run dev
 cd frontend
 npm install
 npm run dev
+## 8. Screenshots
+### 📊 Dashboard
+<img width="1919" height="1073" alt="Screenshot 2025-12-07 201124" src="https://github.com/user-attachments/assets/66bf392c-d065-43cc-ae85-1c2d0dbbef55" />
+
