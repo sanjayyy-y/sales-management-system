@@ -1,7 +1,7 @@
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = "https://sales-management-system-backend-1tj5.onrender.com";
 
 export const fetchSales = async (params = {}) => {
-  const url = new URL(`${API_BASE_URL}/sales`);
+  const url = new URL(`${API_BASE_URL}/api/sales`);
 
   Object.entries(params).forEach(([key, value]) => {
     if (value === undefined || value === null || value === '') return;
