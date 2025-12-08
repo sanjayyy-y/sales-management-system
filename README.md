@@ -1,9 +1,6 @@
 # Sales Management System
 
-### ⚠️ Cold Start (Free Hosting)
-
-The backend runs on Render’s free tier and may sleep when inactive.
-First load can take 20–30 seconds. If data doesn’t load, please refresh once.
+⚠️ Note: The backend is hosted on Render free tier. It may take 20–40 seconds to wake up on first request.
 
 ## 1. Overview
 

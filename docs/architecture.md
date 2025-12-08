@@ -1,132 +1,216 @@
+# Architecture Document
+
+This document explains the backend and frontend architecture, data flow, folder structure, and module responsibilities of the Sales Management System.
+
+
+
 ## 1. Backend Architecture
-The backend is built using **Node.js + Express** and exposes REST APIs to support searching, filtering, sorting, and pagination across 560,000+ records.  
-Key components include:
 
-**routes/**  
-Defines the API endpoints (`/api/sales`).
+The backend is built using **Node.js + Express** and provides all REST APIs required for searching, filtering, sorting, and paginating 560,000+ sales records.
 
-**controllers/**  
-Handles incoming requests, extracts query parameters, and delegates logic to services.
+### **Key Backend Layers**
 
-**services/**  
-Constructs dynamic MongoDB queries for:
-- Multi-select filters
-- Range filters (age, date)
-- Search conditions
-- Sorting
-- Pagination
+#### **routes/**
+Contains all API route definitions.  
+Main file:
+- `saleRoutes.js` → Handles `/api/sales` routes.
 
-**models/**  
-Contains the Mongoose Sale schema storing all fields (customer, product, billing,metadata).
+#### **controllers/**
+Receives HTTP requests, extracts query parameters, validates input, and forwards logic to service layer.
 
-**utils/**  
-Helper functions for pagination, regex search, and query building.
+#### **services/**
+Core business logic:
+- Builds dynamic MongoDB filters (region, gender, age, date, tags, category, payment method).
+- Handles search (name/phone using regex).
+- Applies sorting and pagination.
+- Performs summary aggregation.
 
-The backend ensures performance using selective projection, conditional query building, and efficient indexing.
+#### **models/**
+Contains the Mongoose schema `Sale.js` defining:
+- Customer info  
+- Product info  
+- Billing & discount  
+- Metadata (date, region, tags, salesperson, etc.)
+
+#### **utils/**
+Helper utilities:
+- Query parsing  
+- Regex builders  
+- Pagination calculations  
+- Error handling
+
+### **Performance Features**
+- Conditional Mongo filters  
+- Indexed fields for fast search & sort  
+- Lightweight projections  
+- Pagination using `skip + limit`  
+- Summary calculations with aggregation pipeline  
+
 
 
 ## 2. Frontend Architecture
-The frontend utilizes **React (Vite)** with a modular component-based design.
 
-Main components:
- **Filters.jsx** – All multi-select dropdowns, age range, date inputs, payment method, tags.
-**SearchBar.jsx** – Debounced search input for name/phone.
-**SalesTable.jsx** – Renders paginated sales data.
-**Pagination.jsx** – Ellipsis-style pagination with next/previous buttons.
-**Dashboard.jsx** – Main page combining filters, metrics cards, and table.
-**api.js** – Axios-based API utility for interacting with backend endpoints.
+The frontend is built with **React (Vite)** and follows a clean, component-based architecture designed to match the Figma UI.
 
-The frontend maintains state with React hooks and synchronizes UI state with backend query parameters.
+### **Main Components**
+
+#### **Filters.jsx**
+Contains:
+- Customer Region (multi-select)
+- Gender (multi-select)
+- Age Range (min–max)
+- Product Category
+- Tags
+- Payment Method
+- Date Range
+
+All changes sync instantly to query parameters.
+
+#### **SearchBar.jsx**
+Debounced search:
+- Name  
+- Phone number  
+
+Prevents excessive API calls.
+
+#### **SalesTable.jsx**
+Displays results:
+- Sticky headers  
+- Responsive table  
+- Auto-updates on filters/search/pagination  
+
+#### **Pagination.jsx**
+Implements ellipsis pagination:
+- Prev/Next  
+- Jump to page  
+- Dynamic shrinking for large page counts  
+
+#### **Dashboard.jsx**
+Integrates everything:
+- Metrics cards  
+- Filters  
+- Search  
+- Table  
+- Pagination  
+
+#### **api.js**
+Handles all API requests to backend with safe parameter handling.
+
+
 
 ## 3. Data Flow
 
-[User interacts with UI (filters, search, sorting, pagination)]
-↓
+```
+User interacts with UI (filters, search, sorting, pagination)
+        ↓
 Frontend constructs query parameters
-↓
-GET /api/sales?filters...&search...&sort...&page...
-↓
-Backend controller receives request
-↓
+        ↓
+GET /api/sales?...query params...
+        ↓
+Backend controller processes request
+        ↓
 Service builds dynamic MongoDB query
-↓
+        ↓
 MongoDB returns:
-matching data,
-pagination metadata,
-summary stats
-↓
-Frontend updates:
-Table,
-summary cards,
-Pagination
+- filtered data
+- summary stats
+- pagination info
+        ↓
+Frontend updates dashboard components
+```
 
+This ensures real-time reactive updates for all user actions.
 
-This flow ensures the table always reflects the latest filters, search input, and sort order.
 
 
 ## 4. Folder Structure
 
+````bash
 root/
 ├── backend/
-│ ├── controllers/
-│ ├── services/
-│ ├── models/
-│ ├── routes/
-│ ├── utils/
-│ ├── seed/
-│ └── index.js
+│   ├── controllers/
+│   ├── services/
+│   ├── models/
+│   ├── routes/
+│   ├── utils/
+│   ├── seed/
+│   └── index.js
 │
 ├── frontend/
-│ ├── src/
-│ │ ├── components/
-│ │ ├── pages/
-│ │ ├── services/
-│ │ ├── utils/
-│ │ ├── styles/
-│ │ └── App.jsx
-│ └── public/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── services/
+│   │   ├── utils/
+│   │   ├── styles/
+│   │   └── App.jsx
+│   └── public/
 │
-└── docs/
-└── architecture.md
+├── docs/
+│   └── architecture.md
+│
+└── README.md
+```
 
 
 ## 5. Module Responsibilities
 
-### **Backend**
-**routes/**  
-Defines the endpoints for fetching sales.
+### Backend Modules
 
-**controllers/**  
-Validates parameters, handles default values, and forwards requests to services.
+#### routes/
+Defines API endpoint structure.
 
-**services/**  
- Builds the combined query for:
- - Customer Region  
-  - Gender  
-  - Age Range  
-  - Product Category  
-  - Tags  
-  - Payment Method  
-  - Date Range  
-  - Search (name/phone)  
-  - Sorting  
-  - Pagination  
-  Returns the result + summary + pagination metadata.
+#### controllers/
+- Extracts & validates parameters  
+- Prepares query inputs  
+- Calls service layer  
 
-**models/**  
-Stores the Mongoose schema and manages database interaction.
+#### services/
+Handles all business logic:
+- Filters  
+- Search  
+- Sorting  
+- Pagination  
+- Summary calculations  
 
-**utils/**  
-Contains helper functions for constructing regex queries, safe number parsing, and pagination math.
+Returns:
+- `data`  
+- `pagination`  
+- `summary`  
 
+#### models/
+Defines MongoDB schema.
 
-### **Frontend**
-**Filters.jsx** → UI for all filters; updates query parameters.  
-**SearchBar.jsx** → Debounced search logic.  
-**SalesTable.jsx** → Displays results returned by backend.  
-**Pagination.jsx** → Renders page numbers with ellipsis.  
-**Dashboard.jsx** → Integrates filters, table, stats, and search into one view.  
-**api.js** → Centralized API client using Axios.
+#### utils/
+Common helper logic used across the backend.
 
 
-This architecture ensures scalability, modularity, and maintainability while delivering fast performance even with large datasets.
+### Frontend Modules
+
+#### Filters.jsx
+Tracks and updates user-selected filters.
+
+#### SearchBar.jsx
+Handles debounced live search.
+
+#### SalesTable.jsx
+Displays backend data with responsive layout.
+
+#### Pagination.jsx
+Shows dynamic pagination with ellipsis.
+
+#### Dashboard.jsx
+Combines filters, table, search, and metrics.
+
+#### api.js
+Centralized API service for all requests.
+
+
+## Summary
+
+This architecture ensures:
+- High performance for large datasets  
+- Clean separation of concerns  
+- Scalable backend design  
+- Responsive and optimized frontend  
+- Smooth user experience matching Figma specifications
