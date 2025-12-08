@@ -150,7 +150,6 @@ root/
 │   └── architecture.md
 │
 └── README.md
-```
 
 
 ## 5. Module Responsibilities
