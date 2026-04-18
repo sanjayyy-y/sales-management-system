@@ -4,11 +4,11 @@ import { buildSaleQuery } from '../utils/buildSaleQuery.js';
 const getSortOptions = (sortBy) => {
   switch (sortBy) {
     case 'quantityAsc':
-      return { quantity: 1 };
+      return { 'sale.quantity': 1 };
     case 'quantityDesc':
-      return { quantity: -1 };
+      return { 'sale.quantity': -1 };
     case 'name':
-      return { customerName: 1 };
+      return { 'customer.name': 1 };
     case 'date':
     default:
       return { date: -1 };
@@ -31,18 +31,18 @@ export const getSalesService = async (params) => {
   const sort = getSortOptions(sortBy);
 
   const [items, totalCount, kpiRaw] = await Promise.all([
-    Sale.find(filter).sort(sort).skip(skip).limit(pageSize),
+    Sale.find(filter).sort(sort).skip(skip).limit(pageSize).lean(),
     Sale.countDocuments(filter),
     Sale.aggregate([
       { $match: filter },
       {
         $group: {
           _id: null,
-          totalUnitsSold: { $sum: '$quantity' },
-          totalAmount: { $sum: '$totalAmount' },
+          totalUnitsSold: { $sum: '$sale.quantity' },
+          totalAmount: { $sum: '$sale.totalAmount' },
           totalDiscount: {
             $sum: {
-              $subtract: ['$totalAmount', '$finalAmount']
+              $subtract: ['$sale.totalAmount', '$sale.finalAmount']
             }
           }
         }
@@ -57,8 +57,24 @@ export const getSalesService = async (params) => {
     totalDiscount: 0
   };
 
+  const dataFormatted = items.map(doc => ({
+    _id: doc._id,
+    date: doc.date,
+    customerId: doc.customer?.id,
+    customerName: doc.customer?.name,
+    phoneNumber: doc.customer?.phone,
+    gender: doc.customer?.gender,
+    age: doc.customer?.age,
+    customerRegion: doc.customer?.region,
+    productId: doc.product?.id,
+    productCategory: doc.product?.category,
+    quantity: doc.sale?.quantity,
+    totalAmount: doc.sale?.totalAmount,
+    employeeName: doc.employee?.name
+  }));
+
   return {
-    data: items,
+    data: dataFormatted,
     pagination: {
       page: pageNum,
       limit: pageSize,

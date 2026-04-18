@@ -16,7 +16,7 @@ export const buildSaleQuery = (params) => {
 
   if (search && search.trim()) {
     const regex = new RegExp(search.trim(), 'i'); // case-insensitive
-    query.$or = [{ customerName: regex }, { phoneNumber: regex }];
+    query.$or = [{ 'customer.name': regex }, { 'customer.phone': regex }];
   }
 
   const parseMulti = (value) =>
@@ -26,27 +26,27 @@ export const buildSaleQuery = (params) => {
 
   const regions = parseMulti(customerRegion);
   if (regions.length) {
-    query.customerRegion = { $in: regions };
+    query['customer.region'] = { $in: regions };
   }
 
   const genders = parseMulti(gender);
   if (genders.length) {
-    query.gender = { $in: genders };
+    query['customer.gender'] = { $in: genders };
   }
 
   const categories = parseMulti(productCategory);
   if (categories.length) {
-    query.productCategory = { $in: categories };
+    query['product.category'] = { $in: categories };
   }
 
   const tagList = parseMulti(tags);
   if (tagList.length) {
-    query.tags = { $in: tagList };
+    query['product.tags'] = { $in: tagList };
   }
 
   const paymentMethods = parseMulti(paymentMethod);
   if (paymentMethods.length) {
-    query.paymentMethod = { $in: paymentMethods };
+    query['sale.paymentMethod'] = { $in: paymentMethods };
   }
 
     let minAge = null;
@@ -66,11 +66,10 @@ export const buildSaleQuery = (params) => {
     const hasMaxAge = maxAge !== null;
 
     if (hasMinAge || hasMaxAge) {
-        query.age = {};
-        if (hasMinAge) query.age.$gte = minAge;
-        if (hasMaxAge) query.age.$lte = maxAge;
+        query['customer.age'] = {};
+        if (hasMinAge) query['customer.age'].$gte = minAge;
+        if (hasMaxAge) query['customer.age'].$lte = maxAge;
     }
-
 
   if (dateFrom || dateTo) {
     query.date = {};

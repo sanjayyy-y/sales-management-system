@@ -2,49 +2,54 @@ import mongoose from 'mongoose';
 
 const saleSchema = new mongoose.Schema(
   {
-    // Customer
-    customerId: String,
-    customerName: String,
-    phoneNumber: String,
-    gender: String,
-    age: Number,
-    customerRegion: String,
-    customerType: String,
-
-    // Product
-    productId: String,
-    productName: String,
-    brand: String,
-    productCategory: String,
-    tags: [String],
-
-    // Sales 
-    quantity: Number,
-    pricePerUnit: Number,
-    discountPercentage: Number,
-    totalAmount: Number,
-    finalAmount: Number,
-
-    // Operational
+    transactionId: Number,
     date: Date,
-    paymentMethod: String,
-    orderStatus: String,
-    deliveryType: String,
-    storeId: String,
-    storeLocation: String,
-    salespersonId: String,
-    employeeName: String
+    customer: {
+      id: String,
+      name: String,
+      phone: String,
+      gender: String,
+      age: Number,
+      region: String,
+      type: String
+    },
+    product: {
+      id: String,
+      name: String,
+      brand: String,
+      category: String,
+      tags: [String]
+    },
+    sale: {
+      quantity: Number,
+      pricePerUnit: Number,
+      discountPercent: Number,
+      totalAmount: Number,
+      finalAmount: Number,
+      paymentMethod: String,
+      orderStatus: String,
+      deliveryType: String
+    },
+    store: {
+      id: String,
+      location: String
+    },
+    employee: {
+      id: String,
+      name: String
+    }
   },
   {
     timestamps: true
   }
 );
-saleSchema.index({ customerName: 1 });
-saleSchema.index({ phoneNumber: 1 });
-saleSchema.index({ customerRegion: 1 });
-saleSchema.index({ gender: 1 });
-saleSchema.index({ productCategory: 1 });
-saleSchema.index({ paymentMethod: 1 });
+
+saleSchema.index({ 'customer.name': 1 });
+saleSchema.index({ 'customer.phone': 1 });
+saleSchema.index({ 'customer.region': 1 });
+saleSchema.index({ 'customer.gender': 1 });
+saleSchema.index({ 'product.category': 1 });
+saleSchema.index({ 'sale.paymentMethod': 1 });
 saleSchema.index({ date: -1 });
 
 export const Sale = mongoose.model('Sale', saleSchema);
